@@ -33,13 +33,15 @@ jobs:
           
           # Kiểm tra xem git có được cài đặt không
           if ! command -v git &> /dev/null; then
-            echo "Git not found, installing..."
-            sudo apt-get update && sudo apt-get install -y git
+            echo "Error: Git is not installed on VPS"
+            echo "Please install Git manually: sudo apt-get install -y git"
+            exit 1
           fi
           
           # Kiểm tra xem docker-compose có được cài đặt không
-          if ! command -v docker-compose &> /dev/null; then
-            echo "Docker Compose not found. Tuy nhiên server đã có sẵn docker compose."
+          if ! command -v docker &> /dev/null; then
+            echo "Docker not found, please install Docker first."
+            exit 1
           fi
           
           # Di chuyển đến thư mục dự án hoặc tạo mới nếu chưa có
@@ -64,10 +66,10 @@ jobs:
           fi
           
           # Dừng các container cũ nếu có
-          docker-compose down || true
+          docker compose down || true
           
           # Xây dựng và chạy ứng dụng
-          docker-compose up -d --build
+          docker compose up -d --build
           
           echo "Deployment successful!"
           echo "Application is running on port 1132"
