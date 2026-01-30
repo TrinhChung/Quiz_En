@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}AI Quiz Generator - Quiz App{% endblock %}
+
+{% block extra_css %}
+<style>
+    .generator-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .preview-section {
+        display: none;
+        margin-top: 2rem;
+    }
+
+    .quiz-preview {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .quiz-preview h4 {
+        color: #667eea;
+        margin-bottom: 0.5rem;
+    }
+
+    .quiz-preview .option {
+        padding: 0.5rem;
+        margin: 0.5rem 0;
+        background: #f5f5f5;
+        border-radius: 4px;
+        border-left: 3px solid #ddd;
+    }
+
+    .quiz-preview .option.correct {
+        border-left-color: #48bb78;
+        background: #f0fdf4;
+    }
+
+    .spinner {
+        display: none;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .spinner::after {
+        content: '⏳ Generating...';
+        font-size: 1.2rem;
+    }
+
+    .success-message {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>🤖 AI Quiz Generator</h1>
+    <p>Generate quiz questions from vocabulary using AI</p>
+</div>
+
+{% if not has_api_key %}
+<div class="card">
+    <div class="alert alert-error">
+        ⚠️ <strong>API Key Not Found</strong><br>
+        GEMINI_API_KEY is not configured. Please set it in your environment variables.
+    </div>
+</div>
+{% else %}
+
+<div class="generator-container">
+    <!-- Input Form -->
+    <div class="card">
+        <h2>Input Vocabulary</h2>
+        <p class="alert alert-info" id="status" style="display: none;"></p>
+
+        <form id="generator-form">
+            <div class="form-group">
+                <label for="vocabulary">Vocabulary Words *</label>
+                <textarea id="vocabulary" rows="4" required 
+                    placeholder="Enter words separated by comma or newline&#10;Example: apple, banana, orange&#10;or&#10;apple&#10;banana&#10;orange"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="num-questions">Number of Questions *</label>
+                <select id="num-questions" required>
+                    <option value="3">3 questions</option>
+                    <option value="5" selected>5 questions</option>
+                    <option value="10">10 questions</option>
+                    <option value="15">15 questions</option>
+                    <option value="20">20 questions</option>
+                </select>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn btn-secondary" onclick="previewQuizzes()">Preview</button>
+                <button type="button" class="btn btn-primary" onclick="generateAndSave()">Generate & Save</button>
+            </div>
+        </form>
+
+        <div class="spinner" id="spinner"></div>
+    </div>
+
+    <!-- Preview Section -->
+    <div class="card preview-section" id="preview-section">
+        <h2>Quiz Preview</h2>
+        <p id="preview-count"></p>
+        <div id="preview-list"></div>
+        <div class="btn-group">
+            <button type="button" class="btn btn-primary" onclick="savePreviewedQuizzes()">Save These Quizzes</button>
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('preview-section').style.display = 'none'">Close</button>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div class="card success-message" id="success-message">
+        <div class="alert alert-success" id="success-text"></div>
+        <a href="/" class="btn btn-primary">Go to Home</a>
+    </div>
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const form = document.getElementById('generator-form');
+    const statusEl = document.getElementById('status');
+    const spinnerEl = document.getElementById('spinner');
+    const previewSection = document.getElementById('preview-section');
+    const previewList = document.getElementById('preview-list');
+    const previewCount = document.getElementById('preview-count');
+    const successMessage = document.getElementById('success-message');
+    const successText = document.getElementById('success-text');
+    
+    let currentPreviewQuizzes = [];
+
+    async function getVocabulary() {
+        const vocab = document.getElementById('vocabulary').value.trim();
+        if (!vocab) {
+            showStatus('Please enter vocabulary words', 'error');
+            return null;
+        }
+        return vocab;
+    }
+
+    function getNumQuestions() {
+        return parseInt(document.getElementById('num-questions').value);
+    }
+
+    function showStatus(message, type) {
+        statusEl.textContent = message;
+        statusEl.className = `alert alert-${type === 'error' ? 'error' : type === 'success' ? 'success' : 'info'}`;
+        statusEl.style.display = 'block';
+        if (type === 'success') setTimeout(() => statusEl.style.display = 'none', 4000);
+    }
+
+    function showSpinner(show = true) {
+        spinnerEl.style.display = show ? 'block' : 'none';
+    }
+
+    async function previewQuizzes() {
+        const vocab = await getVocabulary();
+        if (!vocab) return;
+
+        showSpinner(true);
+        showStatus('Generating preview...', 'info');
+
+        try {
+            const response = await fetch('/api/generator/preview', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    vocabulary: vocab,
+                    num_questions: getNumQuestions()
+                })
+            });
+
+            if (!response.ok) throw new Error('Failed to preview');
+
+            const data = await response.json();
+            if (!data.success || !data.quizzes || data.quizzes.length === 0) {
+                showStatus('Failed to generate quizzes', 'error');
+                showSpinner(false);
+                return;
+            }
+
+            currentPreviewQuizzes = data.quizzes;
+            displayPreview(data.quizzes);
+            showStatus(`Generated ${data.quizzes.length} quiz questions!`, 'success');
+        } catch (e) {
+            showStatus(`Error: ${e.message}`, 'error');
+        }
+
+        showSpinner(false);
+    }
+
+    async function generateAndSave() {
+        const vocab = await getVocabulary();
+        if (!vocab) return;
+
+        showSpinner(true);
+        showStatus('Generating and saving quizzes...', 'info');
+
+        try {
+            const response = await fetch('/api/generator/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    vocabulary: vocab,
+                    num_questions: getNumQuestions()
+                })
+            });
+
+            if (!response.ok) throw new Error('Failed to generate');
+
+            const data = await response.json();
+            if (!data.success || !data.quizzes || data.quizzes.length === 0) {
+                showStatus('Failed to generate quizzes', 'error');
+                showSpinner(false);
+                return;
+            }
+
+            successText.textContent = `✅ Successfully created ${data.quizzes.length} quiz questions!`;
+            successMessage.style.display = 'block';
+            form.reset();
+            previewSection.style.display = 'none';
+            showStatus('Quizzes saved!', 'success');
+        } catch (e) {
+            showStatus(`Error: ${e.message}`, 'error');
+        }
+
+        showSpinner(false);
+    }
+
+    function savePreviewedQuizzes() {
+        if (currentPreviewQuizzes.length === 0) {
+            showStatus('No quizzes to save', 'error');
+            return;
+        }
+        generateAndSave();
+    }
+
+    function displayPreview(quizzes) {
+        previewCount.textContent = `${quizzes.length} questions generated`;
+        previewList.innerHTML = quizzes.map((quiz, idx) => `
+            <div class="quiz-preview">
+                <h4>Question ${idx + 1}: ${escapeHtml(quiz.question)}</h4>
+                ${quiz.options.map(opt => `
+                    <div class="option ${quiz.answer === opt ? 'correct' : ''}">
+                        ${escapeHtml(opt)}
+                        ${quiz.answer === opt ? ' ✓' : ''}
+                    </div>
+                `).join('')}
+            </div>
+        `).join('');
+        previewSection.style.display = 'block';
+        previewSection.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function escapeHtml(text) {
+        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+        return text.replace(/[&<>"']/g, m => map[m]);
+    }
+</script>
+{% endblock %}

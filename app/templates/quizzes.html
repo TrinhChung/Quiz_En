@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Quizzes - Quiz App{% endblock %}
+
+{% block extra_css %}
+<style>
+    .quiz-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid #eee;
+    }
+
+    .quiz-item:last-child {
+        border-bottom: none;
+    }
+
+    .quiz-item:hover {
+        background: #f9f9f9;
+    }
+
+    .quiz-info {
+        flex: 1;
+    }
+
+    .quiz-info h3 {
+        margin-bottom: 0.5rem;
+    }
+
+    .quiz-info p {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .quiz-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-small {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .quiz-actions {
+            flex-direction: column;
+        }
+
+        .btn-small {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>📚 Quiz Management</h1>
+    <p>Create, update, and manage your quiz questions</p>
+</div>
+
+<!-- Create/Update Form -->
+<div class="card" id="create">
+    <h2>Create / Update Quiz</h2>
+    <p class="alert alert-info" id="status" style="display: none;"></p>
+    
+    <form id="quiz-form">
+        <input type="hidden" id="quiz-id" />
+        
+        <div class="form-group">
+            <label for="question">Question *</label>
+            <textarea id="question" rows="3" required placeholder="Enter your question here..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="options">Options (comma-separated) *</label>
+            <textarea id="options" rows="3" required placeholder="Option 1, Option 2, Option 3, Option 4"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="answer">Correct Answer *</label>
+            <input type="text" id="answer" required placeholder="Enter the correct answer...">
+        </div>
+
+        <div class="btn-group">
+            <button type="submit" class="btn btn-primary">Save Quiz</button>
+            <button type="reset" class="btn btn-secondary">Clear</button>
+            <button type="button" class="btn btn-secondary" onclick="resetForm()">New Quiz</button>
+        </div>
+    </form>
+</div>
+
+<!-- Quiz List -->
+<div class="card" id="quizzes">
+    <h2>All Quizzes</h2>
+    <p id="no-quizzes" style="color: #666;">Loading quizzes...</p>
+    <div id="quizzes-list"></div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const statusEl = document.getElementById('status');
+    const quizForm = document.getElementById('quiz-form');
+    const quizIdEl = document.getElementById('quiz-id');
+    const questionEl = document.getElementById('question');
+    const optionsEl = document.getElementById('options');
+    const answerEl = document.getElementById('answer');
+    const quizzesList = document.getElementById('quizzes-list');
+    const noQuizzesEl = document.getElementById('no-quizzes');
+
+    // Load quizzes
+    async function loadQuizzes() {
+        try {
+            const response = await fetch('/api/quizzes');
+            const quizzes = await response.json();
+            
+            if (quizzes.length === 0) {
+                noQuizzesEl.textContent = 'No quizzes yet. Create one to get started!';
+                quizzesList.innerHTML = '';
+                return;
+            }
+
+            noQuizzesEl.style.display = 'none';
+            quizzesList.innerHTML = quizzes.map(quiz => `
+                <div class="quiz-item">
+                    <div class="quiz-info">
+                        <h3>${escapeHtml(quiz.question)}</h3>
+                        <p>${quiz.options.length} options • ID: ${quiz.id}</p>
+                    </div>
+                    <div class="quiz-actions">
+                        <button class="btn btn-primary btn-small" onclick="editQuiz(${quiz.id})">Edit</button>
+                        <button class="btn btn-danger btn-small" onclick="deleteQuiz(${quiz.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        } catch (e) {
+            noQuizzesEl.textContent = 'Error loading quizzes';
+            console.error(e);
+        }
+    }
+
+    // Save quiz
+    quizForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const quizId = quizIdEl.value;
+        const question = questionEl.value.trim();
+        const options = optionsEl.value.trim().split(',').map(o => o.trim()).filter(o => o);
+        const answer = answerEl.value.trim();
+
+        if (!question || options.length < 2 || !answer) {
+            showStatus('Please fill all fields correctly', 'error');
+            return;
+        }
+
+        try {
+            const method = quizId ? 'PUT' : 'POST';
+            const url = quizId ? `/api/quizzes/${quizId}` : '/api/quizzes';
+            
+            const response = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question, options, answer })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.errors?.question || 'Error saving quiz');
+            }
+
+            const quiz = await response.json();
+            showStatus(quizId ? 'Quiz updated!' : 'Quiz created!', 'success');
+            resetForm();
+            loadQuizzes();
+        } catch (e) {
+            showStatus(`Error: ${e.message}`, 'error');
+        }
+    });
+
+    // Edit quiz
+    async function editQuiz(id) {
+        try {
+            const response = await fetch(`/api/quizzes/${id}`);
+            const quiz = await response.json();
+
+            quizIdEl.value = id;
+            questionEl.value = quiz.question;
+            optionsEl.value = quiz.options.join(', ');
+            answerEl.value = quiz.answer;
+
+            questionEl.focus();
+            window.scrollTo(0, 0);
+        } catch (e) {
+            showStatus('Error loading quiz', 'error');
+        }
+    }
+
+    // Delete quiz
+    async function deleteQuiz(id) {
+        if (!confirm('Are you sure?')) return;
+
+        try {
+            const response = await fetch(`/api/quizzes/${id}`, { method: 'DELETE' });
+            if (!response.ok) throw new Error('Delete failed');
+
+            showStatus('Quiz deleted!', 'success');
+            loadQuizzes();
+        } catch (e) {
+            showStatus(`Error: ${e.message}`, 'error');
+        }
+    }
+
+    // Reset form
+    function resetForm() {
+        quizForm.reset();
+        quizIdEl.value = '';
+    }
+
+    // Show status
+    function showStatus(message, type) {
+        statusEl.textContent = message;
+        statusEl.className = `alert alert-${type === 'error' ? 'error' : type === 'success' ? 'success' : 'info'}`;
+        statusEl.style.display = 'block';
+        setTimeout(() => statusEl.style.display = 'none', 4000);
+    }
+
+    // Escape HTML
+    function escapeHtml(text) {
+        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+        return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    loadQuizzes();
+</script>
+{% endblock %}

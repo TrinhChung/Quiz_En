@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Quiz App{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: 8px;
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .hero h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .hero p {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+    }
+
+    .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .feature-card {
+        background: white;
+        border-radius: 8px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .feature-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .feature-card h3 {
+        color: #667eea;
+        margin-bottom: 0.5rem;
+    }
+
+    .feature-card p {
+        color: #666;
+    }
+
+    .menu-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .menu-item {
+        background: white;
+        border-radius: 8px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.3s;
+    }
+
+    .menu-item:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .menu-item a {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .menu-item-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .menu-item h3 {
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .menu-item p {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .stats {
+        background: white;
+        border-radius: 8px;
+        padding: 2rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 2rem;
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .stat-item h3 {
+        color: #667eea;
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-item p {
+        color: #666;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero">
+    <h1>🎓 Welcome to Quiz App</h1>
+    <p>Create, Practice, and Master Your Knowledge</p>
+    <a href="/#quizzes" class="btn btn-primary">Start Learning</a>
+</div>
+
+<!-- Features -->
+<div class="card">
+    <h2>Features</h2>
+    <div class="features">
+        <div class="feature-card">
+            <div class="feature-icon">📝</div>
+            <h3>Practice Quizzes</h3>
+            <p>Test your knowledge with interactive multiple choice questions</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🤖</div>
+            <h3>AI Generator</h3>
+            <p>Generate quizzes automatically from vocabulary using AI</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3>Track Progress</h3>
+            <p>Monitor your learning journey and improvement over time</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3>Fast & Easy</h3>
+            <p>Simple and intuitive interface for quick learning</p>
+        </div>
+    </div>
+</div>
+
+<!-- Menu Navigation -->
+<div class="card">
+    <h2>Get Started</h2>
+    <div class="menu-section">
+        <div class="menu-item">
+            <a href="/#quizzes">
+                <div class="menu-item-icon">📚</div>
+                <h3>Browse Quizzes</h3>
+                <p>View and practice all available quizzes</p>
+            </a>
+        </div>
+        <div class="menu-item">
+            <a href="/generator">
+                <div class="menu-item-icon">✨</div>
+                <h3>Generate Quiz</h3>
+                <p>Create new quizzes using AI from vocabulary</p>
+            </a>
+        </div>
+        <div class="menu-item">
+            <a href="/#create">
+                <div class="menu-item-icon">➕</div>
+                <h3>Create Manually</h3>
+                <p>Add custom quiz questions manually</p>
+            </a>
+        </div>
+        <div class="menu-item">
+            <a href="/#docs">
+                <div class="menu-item-icon">📖</div>
+                <h3>API Docs</h3>
+                <p>View API documentation and examples</p>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="stats">
+    <div class="stat-item">
+        <h3 id="total-quizzes">0</h3>
+        <p>Total Quizzes</p>
+    </div>
+    <div class="stat-item">
+        <h3>100%</h3>
+        <p>Free</p>
+    </div>
+    <div class="stat-item">
+        <h3>∞</h3>
+        <p>Questions</p>
+    </div>
+</div>
+
+<!-- API Documentation -->
+<div class="card" id="docs">
+    <h2>API Endpoints</h2>
+    <div style="background: #f5f5f5; padding: 1rem; border-radius: 4px; overflow-x: auto;">
+        <pre><code>
+# Quiz Management
+GET     /api/quizzes              - List all quizzes
+POST    /api/quizzes              - Create new quiz
+GET     /api/quizzes/&lt;id&gt;       - Get quiz by ID
+PUT     /api/quizzes/&lt;id&gt;       - Update quiz
+DELETE  /api/quizzes/&lt;id&gt;       - Delete quiz
+
+# Answer Questions
+POST    /api/answer/&lt;id&gt;        - Submit answer
+
+# AI Generator
+POST    /api/generator/generate  - Generate & save quizzes
+POST    /api/generator/preview   - Preview generated quizzes
+
+# Pages
+GET     /                         - Home page
+GET     /quiz/&lt;id&gt;             - Quiz detail page
+GET     /generator               - Generator page
+        </code></pre>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Load stats
+    async function loadStats() {
+        try {
+            const response = await fetch('/api/quizzes');
+            const quizzes = await response.json();
+            document.getElementById('total-quizzes').textContent = quizzes.length;
+        } catch (e) {
+            console.error('Error loading stats:', e);
+        }
+    }
+
+    loadStats();
+</script>
+{% endblock %}

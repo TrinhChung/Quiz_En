@@ -11,7 +11,12 @@ def create_app(config_object=None):
         app.config.from_object(config_object)
 
     # Register blueprints
-    from .routes.main import main_bp
+    from .routes import main_bp, page_bp, quiz_bp, question_bp, generator_bp, template_bp
     app.register_blueprint(main_bp)
+    app.register_blueprint(page_bp)
+    app.register_blueprint(quiz_bp)
+    app.register_blueprint(question_bp)
+    app.register_blueprint(generator_bp)
+    app.register_blueprint(template_bp)
 
     return app
