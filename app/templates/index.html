@@ -6,19 +6,164 @@
   <title>Quiz App</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 2rem; }
-    .quiz { margin-bottom: 1rem; padding: 0.5rem; border: 1px solid #ddd; }
+    .quiz { margin-bottom: 1rem; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; }
+    .quiz h3 { margin: 0 0 0.5rem; }
+    .quiz-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+    .quiz-actions button { padding: 0.4rem 0.6rem; }
+    .form-card { margin-bottom: 1.5rem; padding: 1rem; border: 1px solid #ccc; border-radius: 6px; background: #fafafa; }
+    .form-row { margin-bottom: 0.75rem; }
+    label { display: block; font-weight: 600; margin-bottom: 0.35rem; }
+    input, textarea { width: 100%; padding: 0.5rem; }
+    .status { margin: 0.5rem 0; color: #0366d6; }
   </style>
 </head>
 <body>
   <h1>Danh sách Quiz</h1>
-  {% if quizzes %}
-    {% for q in quizzes %}
-      <div class="quiz">
-        <strong>#{{ q.id }}</strong> — {{ q.question }}
+  <section class="form-card">
+    <h2>Tạo / cập nhật quiz</h2>
+    <p class="status" id="status"></p>
+    <form id="quiz-form">
+      <input type="hidden" id="quiz-id" />
+      <div class="form-row">
+        <label for="question">Câu hỏi</label>
+        <textarea id="question" rows="2" required></textarea>
       </div>
-    {% endfor %}
-  {% else %}
-    <p>Không có quiz nào.</p>
-  {% endif %}
+      <div class="form-row">
+        <label for="options">Lựa chọn (cách nhau bởi dấu phẩy)</label>
+        <input id="options" type="text" placeholder="Ví dụ: A, B, C, D" required />
+      </div>
+      <div class="form-row">
+        <label for="answer">Đáp án đúng</label>
+        <input id="answer" type="text" placeholder="Ví dụ: B" required />
+      </div>
+      <button type="submit">Lưu quiz</button>
+      <button type="button" id="reset-form">Làm mới</button>
+    </form>
+  </section>
+
+  <div id="quiz-list">
+    {% if quizzes %}
+      {% for q in quizzes %}
+        <div class="quiz" data-id="{{ q.id }}">
+          <h3>#{{ q.id }} — {{ q.question }}</h3>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p id="empty-state">Không có quiz nào.</p>
+    {% endif %}
+  </div>
+
+  <script>
+    const quizList = document.getElementById('quiz-list');
+    const statusEl = document.getElementById('status');
+    const form = document.getElementById('quiz-form');
+    const resetBtn = document.getElementById('reset-form');
+    const quizIdEl = document.getElementById('quiz-id');
+    const questionEl = document.getElementById('question');
+    const optionsEl = document.getElementById('options');
+    const answerEl = document.getElementById('answer');
+
+    const setStatus = (message) => {
+      statusEl.textContent = message;
+      if (message) {
+        setTimeout(() => { statusEl.textContent = ''; }, 3000);
+      }
+    };
+
+    const renderQuiz = (quiz) => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'quiz';
+      wrapper.dataset.id = quiz.id;
+
+      const title = document.createElement('h3');
+      title.textContent = `#${quiz.id} — ${quiz.question}`;
+      wrapper.appendChild(title);
+
+      const options = document.createElement('p');
+      options.textContent = `Lựa chọn: ${quiz.options.join(', ')}`;
+      wrapper.appendChild(options);
+
+      const answer = document.createElement('p');
+      answer.textContent = `Đáp án: ${quiz.answer}`;
+      wrapper.appendChild(answer);
+
+      const actions = document.createElement('div');
+      actions.className = 'quiz-actions';
+
+      const editBtn = document.createElement('button');
+      editBtn.textContent = 'Sửa';
+      editBtn.type = 'button';
+      editBtn.addEventListener('click', () => fillForm(quiz));
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = 'Xóa';
+      deleteBtn.type = 'button';
+      deleteBtn.addEventListener('click', () => deleteQuiz(quiz.id));
+
+      actions.appendChild(editBtn);
+      actions.appendChild(deleteBtn);
+      wrapper.appendChild(actions);
+
+      return wrapper;
+    };
+
+    const refreshList = async () => {
+      const response = await fetch('/api/quizzes');
+      const data = await response.json();
+      quizList.innerHTML = '';
+      data.forEach((quiz) => quizList.appendChild(renderQuiz(quiz)));
+    };
+
+    const fillForm = (quiz) => {
+      quizIdEl.value = quiz.id;
+      questionEl.value = quiz.question;
+      optionsEl.value = quiz.options.join(', ');
+      answerEl.value = quiz.answer;
+      setStatus(`Đang chỉnh sửa quiz #${quiz.id}`);
+    };
+
+    const resetForm = () => {
+      quizIdEl.value = '';
+      questionEl.value = '';
+      optionsEl.value = '';
+      answerEl.value = '';
+    };
+
+    const deleteQuiz = async (id) => {
+      const response = await fetch(`/api/quizzes/${id}`, { method: 'DELETE' });
+      if (response.ok) {
+        await refreshList();
+        setStatus('Đã xóa quiz.');
+      } else {
+        setStatus('Không thể xóa quiz.');
+      }
+    };
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const payload = {
+        question: questionEl.value,
+        options: optionsEl.value.split(',').map((opt) => opt.trim()).filter(Boolean),
+        answer: answerEl.value,
+      };
+      const quizId = quizIdEl.value;
+      const response = await fetch(quizId ? `/api/quizzes/${quizId}` : '/api/quizzes', {
+        method: quizId ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (response.ok) {
+        await refreshList();
+        resetForm();
+        setStatus('Đã lưu quiz.');
+      } else {
+        const error = await response.json();
+        setStatus(`Lỗi: ${JSON.stringify(error.errors || error)}`);
+      }
+    });
+
+    resetBtn.addEventListener('click', resetForm);
+    refreshList();
+  </script>
 </body>
 </html>
