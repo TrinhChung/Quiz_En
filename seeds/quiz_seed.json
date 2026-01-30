@@ -1,0 +1,102 @@
+[
+  {
+    "quiz_id": "quiz_001",
+    "word": "in",
+    "part_of_speech": "preposition",
+    "meaning_vi": "ở trong, trong suốt",
+    "question": {
+      "sentence": "The book is _____ the table.",
+      "blank_position": "____"
+    },
+    "choices": [
+      { "key": "A", "value": "on" },
+      { "key": "B", "value": "in" },
+      { "key": "C", "value": "at" },
+      { "key": "D", "value": "by" }
+    ],
+    "correct_answer": "B",
+    "explanation": {
+      "vi": "Dùng 'in' để chỉ vị trí bên trong một vật thể hoặc không gian. 'The book is in the table' - sách ở trong bàn."
+    }
+  },
+  {
+    "quiz_id": "quiz_002",
+    "word": "because",
+    "part_of_speech": "conjunction",
+    "meaning_vi": "bởi vì, vì",
+    "question": {
+      "sentence": "I stayed home _____ I was sick.",
+      "blank_position": "____"
+    },
+    "choices": [
+      { "key": "A", "value": "if" },
+      { "key": "B", "value": "because" },
+      { "key": "C", "value": "although" },
+      { "key": "D", "value": "when" }
+    ],
+    "correct_answer": "B",
+    "explanation": {
+      "vi": "'Because' dùng để chỉ nguyên nhân, lý do. Ở đây lý do tôi ở nhà là vì tôi bị bệnh."
+    }
+  },
+  {
+    "quiz_id": "quiz_003",
+    "word": "a few",
+    "part_of_speech": "quantifier",
+    "meaning_vi": "một vài, một ít (có thể đếm được)",
+    "question": {
+      "sentence": "There are _____ apples in the basket.",
+      "blank_position": "____"
+    },
+    "choices": [
+      { "key": "A", "value": "a little" },
+      { "key": "B", "value": "a few" },
+      { "key": "C", "value": "many" },
+      { "key": "D", "value": "much" }
+    ],
+    "correct_answer": "B",
+    "explanation": {
+      "vi": "'A few' dùng với danh từ có thể đếm được (apples là danh từ đếm được). 'A little' dùng với danh từ không đếm được."
+    }
+  },
+  {
+    "quiz_id": "quiz_004",
+    "word": "take on",
+    "part_of_speech": "phrasal_verb",
+    "meaning_vi": "đảm nhận, chịu trách nhiệm",
+    "question": {
+      "sentence": "She decided to _____ a new project at work.",
+      "blank_position": "____"
+    },
+    "choices": [
+      { "key": "A", "value": "take on" },
+      { "key": "B", "value": "take off" },
+      { "key": "C", "value": "take over" },
+      { "key": "D", "value": "take up" }
+    ],
+    "correct_answer": "A",
+    "explanation": {
+      "vi": "'Take on' có nghĩa là đảm nhận một công việc hoặc trách nhiệm mới. Ở đây cô quyết định đảm nhận một dự án mới."
+    }
+  },
+  {
+    "quiz_id": "quiz_005",
+    "word": "definitely",
+    "part_of_speech": "adverb",
+    "meaning_vi": "chắc chắn, nhất định",
+    "question": {
+      "sentence": "We will _____ attend the meeting tomorrow.",
+      "blank_position": "____"
+    },
+    "choices": [
+      { "key": "A", "value": "probably" },
+      { "key": "B", "value": "definitely" },
+      { "key": "C", "value": "maybe" },
+      { "key": "D", "value": "perhaps" }
+    ],
+    "correct_answer": "B",
+    "explanation": {
+      "vi": "'Definitely' có nghĩa là chắc chắn, hoàn toàn chắc chắn. Dùng khi bạn rất tự tin về điều gì đó."
+    }
+  }
+]
