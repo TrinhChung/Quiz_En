@@ -1,0 +1,47 @@
+{# Dynamic Header Component #}
+<div class="page-header" data-route="{{ current_route | default('home') }}">
+    <div class="header-content">
+        <div class="header-title">
+            <h1>{{ page_title | default('Quiz App') }}</h1>
+            {% if page_subtitle %}
+            <p class="header-subtitle">{{ page_subtitle }}</p>
+            {% endif %}
+        </div>
+        
+        {% if show_breadcrumb %}
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+            <ol>
+                <li><a href="/">Home</a></li>
+                {% for crumb in breadcrumbs %}
+                    {% if not loop.last %}
+                    <li><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
+                    {% else %}
+                    <li class="current">{{ crumb.label }}</li>
+                    {% endif %}
+                {% endfor %}
+            </ol>
+        </nav>
+        {% endif %}
+
+        {% if show_stats %}
+        <div class="header-stats">
+            {% for stat in stats %}
+            <div class="stat-item">
+                <span class="stat-label">{{ stat.label }}</span>
+                <span class="stat-value">{{ stat.value }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    {% if show_actions %}
+    <div class="header-actions">
+        {% for action in actions %}
+        <a href="{{ action.url }}" class="btn btn-{{ action.style | default('secondary') }}">
+            {{ action.icon }}{{ action.label }}
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>

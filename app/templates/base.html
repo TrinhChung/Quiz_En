@@ -498,6 +498,135 @@
             font-size: 0.95rem;
         }
 
+        /* Page Header */
+        .page-header {
+            background: white;
+            border-bottom: 2px solid #f0f0f0;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            gap: 2rem;
+        }
+
+        .header-content {
+            flex: 1;
+        }
+
+        .header-title h1 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2rem;
+            color: #333;
+        }
+
+        .header-subtitle {
+            margin: 0;
+            color: #666;
+            font-size: 1rem;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            margin-top: 1rem;
+        }
+
+        .breadcrumb ol {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .breadcrumb li {
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb li::after {
+            content: '/';
+            margin-left: 0.5rem;
+            color: #999;
+        }
+
+        .breadcrumb li:last-child::after {
+            content: '';
+        }
+
+        .breadcrumb a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb li.current {
+            color: #666;
+            font-weight: 600;
+        }
+
+        /* Header Stats */
+        .header-stats {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            color: #999;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            color: #667eea;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        /* Header Actions */
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        .header-actions .btn {
+            white-space: nowrap;
+        }
+
+        @media (max-width: 768px) {
+            .page-header {
+                flex-direction: column;
+                padding: 1.5rem 1rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .header-title h1 {
+                font-size: 1.5rem;
+            }
+
+            .header-stats {
+                gap: 1rem;
+            }
+
+            .header-actions {
+                width: 100%;
+            }
+
+            .header-actions .btn {
+                flex: 1;
+            }
+        }
+
         /* Footer */
         .footer {
             background: #333;
