@@ -1,6 +1,6 @@
 # Quiz_En — Flask Project Template
 
-Cấu trúc mẫu dự án Flask (route, service, util, view).
+Cấu trúc mẫu dự án Flask (route, service, util, view) theo hướng module hoá.
 
 Hướng dẫn nhanh:
 
@@ -14,9 +14,14 @@ Hướng dẫn nhanh:
    python run.py
 
 Kiến trúc (gợi ý):
+- `app/__init__.py` — app factory, đăng ký blueprint
 - `app/routes` — chứa blueprints và các route (HTTP handlers)
 - `app/services` — logic nghiệp vụ, xử lý dữ liệu
 - `app/utils` — helper/utility functions
-- `templates` — Jinja2 templates cho view
+- `app/templates` — Jinja2 templates cho view
+- `app/static` — tài nguyên tĩnh (CSS/JS/ảnh) nếu cần
+- `tests` — kiểm thử với `pytest`
 
-Thêm tests với `pytest` và mở rộng theo nhu cầu.
+Gợi ý mở rộng:
+- Tách cấu hình (dev/prod) vào module riêng.
+- Thêm logging và error handlers.
