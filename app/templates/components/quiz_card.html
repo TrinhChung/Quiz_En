@@ -1,0 +1,40 @@
+{# 再利用可能なクイズカードコンポーネント #}
+<div class="card quiz-card" data-quiz-id="{{ quiz.id }}">
+    <div class="quiz-card-header">
+        <h3>{{ quiz.question }}</h3>
+        {% if show_meta %}
+        <span class="quiz-meta">
+            {{ quiz.created_at | default('') }}
+        </span>
+        {% endif %}
+    </div>
+    
+    <div class="quiz-card-body">
+        <div class="options-preview">
+            {% for option in quiz.options %}
+            <div class="option-item {% if option == quiz.answer %}correct{% endif %}">
+                <span class="option-text">{{ option }}</span>
+                {% if option == quiz.answer and show_answer %}
+                <span class="option-badge correct-badge">✓ Correct</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if show_actions %}
+    <div class="quiz-card-footer">
+        <div class="quiz-actions">
+            {% if action_view %}
+            <a href="/quiz/{{ quiz.id }}" class="btn btn-primary btn-small">Take Quiz</a>
+            {% endif %}
+            {% if action_edit %}
+            <button class="btn btn-secondary btn-small" onclick="editQuiz({{ quiz.id }})">Edit</button>
+            {% endif %}
+            {% if action_delete %}
+            <button class="btn btn-danger btn-small" onclick="deleteQuiz({{ quiz.id }})">Delete</button>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>

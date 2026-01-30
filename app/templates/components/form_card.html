@@ -1,0 +1,28 @@
+{# フォームコンポーネント #}
+<div class="form-card">
+    <div class="form-card-header">
+        <h3>{{ title }}</h3>
+        {% if description %}
+        <p class="form-description">{{ description }}</p>
+        {% endif %}
+    </div>
+
+    <form id="{{ form_id }}" class="form-card-body">
+        {% if status_id %}
+        <div class="alert alert-info" id="{{ status_id }}" style="display: none;"></div>
+        {% endif %}
+
+        {{ form_content }}
+
+        <div class="btn-group">
+            <button type="submit" class="btn btn-primary">
+                {{ submit_label | default('Submit') }}
+            </button>
+            {% if show_reset %}
+            <button type="reset" class="btn btn-secondary">
+                {{ reset_label | default('Clear') }}
+            </button>
+            {% endif %}
+        </div>
+    </form>
+</div>

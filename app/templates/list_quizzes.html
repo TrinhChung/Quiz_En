@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Quizzes - Quiz App{% endblock %}
+
+{% block extra_css %}
+<style>
+    .quiz-list-filters {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-input {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .filter-input input {
+        width: 100%;
+    }
+
+    .quiz-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .quiz-grid-item {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: all 0.3s;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .quiz-grid-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .quiz-grid-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem;
+        flex: 0 0 auto;
+    }
+
+    .quiz-grid-header h3 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.1rem;
+    }
+
+    .quiz-grid-meta {
+        display: flex;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        opacity: 0.9;
+    }
+
+    .quiz-grid-body {
+        padding: 1.5rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .quiz-grid-description {
+        color: #666;
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+        flex: 1;
+    }
+
+    .quiz-grid-footer {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .quiz-grid-footer .btn {
+        flex: 1;
+        text-align: center;
+    }
+
+    .no-results {
+        grid-column: 1 / -1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="header">
+    <h1>📚 Browse Quizzes</h1>
+    <p>Choose a quiz to test your knowledge</p>
+</div>
+
+<!-- Filters -->
+<div class="card">
+    <div class="quiz-list-filters">
+        <div class="filter-input">
+            <input type="text" id="search-input" placeholder="Search quizzes..." onkeyup="filterQuizzes()">
+        </div>
+        <button class="btn btn-secondary" onclick="sortQuizzes('recent')">Recent</button>
+        <button class="btn btn-secondary" onclick="sortQuizzes('name')">A-Z</button>
+        <span class="stat-badge" id="quiz-count">Loading...</span>
+    </div>
+</div>
+
+<!-- Quiz Grid -->
+<div class="quiz-grid" id="quiz-grid">
+    <div class="no-results empty-state">
+        <p class="empty-icon">⏳</p>
+        <p class="empty-message">Loading quizzes...</p>
+    </div>
+</div>
+
+<script>
+    let allQuizzes = [];
+    let filteredQuizzes = [];
+
+    async function loadQuizzes() {
+        try {
+            const res = await fetch('/api/quizzes');
+            allQuizzes = await res.json();
+            filteredQuizzes = [...allQuizzes];
+            updateDisplay();
+        } catch (err) {
+            console.error('Error loading quizzes:', err);
+            showError('Failed to load quizzes');
+        }
+    }
+
+    function updateDisplay() {
+        const grid = document.getElementById('quiz-grid');
+        document.getElementById('quiz-count').textContent = `${filteredQuizzes.length} quiz${filteredQuizzes.length !== 1 ? 'zes' : ''}`;
+
+        if (filteredQuizzes.length === 0) {
+            grid.innerHTML = `
+                <div class="no-results empty-state">
+                    <p class="empty-icon">🔍</p>
+                    <p class="empty-message">No quizzes found</p>
+                </div>
+            `;
+            return;
+        }
+
+        grid.innerHTML = filteredQuizzes.map(quiz => `
+            <div class="quiz-grid-item">
+                <div class="quiz-grid-header">
+                    <h3>${quiz.question.substring(0, 50)}${quiz.question.length > 50 ? '...' : ''}</h3>
+                    <div class="quiz-meta-row">
+                        <span class="badge badge-small">${quiz.options.length} options</span>
+                    </div>
+                </div>
+                <div class="quiz-grid-body">
+                    <p class="quiz-grid-description">
+                        Test your knowledge with a ${quiz.options.length}-option multiple choice question.
+                    </p>
+                    <div class="quiz-grid-footer">
+                        <a href="/quiz/${quiz.id}" class="btn btn-primary">Start Quiz</a>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function filterQuizzes() {
+        const search = document.getElementById('search-input').value.toLowerCase();
+        filteredQuizzes = allQuizzes.filter(quiz =>
+            quiz.question.toLowerCase().includes(search) ||
+            quiz.options.some(opt => opt.toLowerCase().includes(search))
+        );
+        updateDisplay();
+    }
+
+    function sortQuizzes(sortBy) {
+        if (sortBy === 'recent') {
+            filteredQuizzes.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        } else if (sortBy === 'name') {
+            filteredQuizzes.sort((a, b) => a.question.localeCompare(b.question));
+        }
+        updateDisplay();
+    }
+
+    function showError(message) {
+        const grid = document.getElementById('quiz-grid');
+        grid.innerHTML = `
+            <div class="no-results">
+                <div class="alert alert-error">${message}</div>
+            </div>
+        `;
+    }
+
+    // Load on page load
+    loadQuizzes();
+</script>
+{% endblock %}

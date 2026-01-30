@@ -1,0 +1,38 @@
+{# クイズリスト表示コンポーネント #}
+<div class="quiz-list-container">
+    {% if quizzes|length == 0 %}
+    <div class="empty-state">
+        <p class="empty-icon">{{ empty_icon | default('📚') }}</p>
+        <p class="empty-message">{{ empty_message | default('No quizzes found') }}</p>
+    </div>
+    {% else %}
+    <div class="quiz-list">
+        {% for quiz in quizzes %}
+        <div class="quiz-list-item">
+            <div class="quiz-list-info">
+                <h4>{{ quiz.question | truncate(60) }}</h4>
+                <p class="quiz-meta">
+                    <span class="badge">{{ quiz.options|length }} options</span>
+                    <span class="badge meta-time">{{ quiz.created_at | default('') }}</span>
+                </p>
+            </div>
+
+            <div class="quiz-list-actions">
+                {% if show_start %}
+                <a href="/quiz/{{ quiz.id }}" class="btn btn-primary btn-small">Start</a>
+                {% endif %}
+                {% if show_view %}
+                <button class="btn btn-secondary btn-small" onclick="viewQuiz({{ quiz.id }})">View</button>
+                {% endif %}
+                {% if show_edit %}
+                <button class="btn btn-secondary btn-small" onclick="editQuiz({{ quiz.id }})">Edit</button>
+                {% endif %}
+                {% if show_delete %}
+                <button class="btn btn-danger btn-small" onclick="deleteQuiz({{ quiz.id }})">Delete</button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>

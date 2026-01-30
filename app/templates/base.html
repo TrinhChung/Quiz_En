@@ -225,6 +225,279 @@
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         }
 
+        /* Reusable Components */
+        
+        /* Quiz Card */
+        .quiz-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .quiz-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .quiz-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .quiz-card-header h3 {
+            margin: 0;
+            flex: 1;
+        }
+
+        .quiz-meta {
+            font-size: 0.85rem;
+            color: #999;
+            white-space: nowrap;
+        }
+
+        .quiz-card-body {
+            margin-bottom: 1rem;
+        }
+
+        .options-preview {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .option-item {
+            padding: 0.6rem;
+            background: #f9f9f9;
+            border-left: 3px solid #ddd;
+            border-radius: 3px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .option-item.correct {
+            background: #f0fdf4;
+            border-left-color: #48bb78;
+        }
+
+        .option-badge {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+        }
+
+        .correct-badge {
+            background: #48bb78;
+            color: white;
+        }
+
+        .quiz-card-footer {
+            border-top: 1px solid #eee;
+            padding-top: 1rem;
+        }
+
+        .quiz-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* Quiz List */
+        .quiz-list-container {
+            width: 100%;
+        }
+
+        .quiz-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .quiz-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: box-shadow 0.3s;
+        }
+
+        .quiz-list-item:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .quiz-list-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .quiz-list-info h4 {
+            margin: 0 0 0.5rem 0;
+            color: #333;
+            word-break: break-word;
+        }
+
+        .quiz-meta {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: #f0f0f0;
+            color: #333;
+            border-radius: 12px;
+            font-size: 0.85rem;
+        }
+
+        .badge.meta-time {
+            color: #999;
+        }
+
+        .quiz-list-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-left: 1rem;
+            flex-shrink: 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-message {
+            color: #999;
+            font-size: 1.1rem;
+        }
+
+        /* Quiz Attempt Form */
+        .quiz-attempt-card {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .progress-bar {
+            display: flex;
+            align-items: center;
+            height: 30px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .progress-fill {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            position: absolute;
+            left: 1rem;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .quiz-question {
+            margin-bottom: 2rem;
+        }
+
+        .quiz-question h2 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .option-radio {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: #f9f9f9;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .option-radio:hover {
+            background: #f0f0f0;
+        }
+
+        .option-radio input[type="radio"] {
+            margin-right: 1rem;
+            cursor: pointer;
+            width: auto;
+        }
+
+        .option-radio.selected {
+            background: #e6f2ff;
+            border-color: #667eea;
+        }
+
+        .option-label {
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .quiz-controls {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #eee;
+        }
+
+        .quiz-controls .btn {
+            flex: 1;
+        }
+
+        /* Form Card */
+        .form-card {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .form-card-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-card-header h3 {
+            margin: 0 0 0.5rem 0;
+            color: #333;
+        }
+
+        .form-description {
+            color: #666;
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
         /* Footer */
         .footer {
             background: #333;
@@ -267,9 +540,9 @@
             <a href="/" class="navbar-brand">📚 Quiz App</a>
             <ul class="navbar-menu">
                 <li><a href="/">Home</a></li>
-                <li><a href="/#quizzes">Quizzes</a></li>
+                <li><a href="/quizzes-list">Browse</a></li>
+                <li><a href="/quizzes">Manage</a></li>
                 <li><a href="/generator">Generator</a></li>
-                <li><a href="/#docs">Docs</a></li>
             </ul>
         </div>
     </nav>

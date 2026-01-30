@@ -1,0 +1,41 @@
+{# クイズ実施用コンポーネント #}
+<div class="quiz-attempt-card">
+    <div class="progress-bar">
+        <div class="progress-fill" style="width: {{ (current_index / total_questions) * 100 }}%"></div>
+        <span class="progress-text">Question {{ current_index }} of {{ total_questions }}</span>
+    </div>
+
+    <div class="quiz-question">
+        <h2>{{ question.question }}</h2>
+    </div>
+
+    <form id="quiz-answer-form" class="quiz-options">
+        <input type="hidden" name="quiz-id" value="{{ quiz.id }}">
+        <input type="hidden" name="question-index" value="{{ current_index }}">
+
+        {% for option in question.options %}
+        <label class="option-radio">
+            <input 
+                type="radio" 
+                name="answer" 
+                value="{{ option }}"
+                required
+                onchange="highlightOption(this)"
+            >
+            <span class="option-label">{{ option }}</span>
+        </label>
+        {% endfor %}
+    </form>
+
+    <div class="quiz-controls">
+        {% if current_index > 1 %}
+        <button class="btn btn-secondary" onclick="previousQuestion()">← Previous</button>
+        {% endif %}
+
+        {% if current_index < total_questions %}
+        <button class="btn btn-primary" onclick="nextQuestion()">Next →</button>
+        {% else %}
+        <button class="btn btn-success" onclick="submitQuiz()">Submit Quiz</button>
+        {% endif %}
+    </div>
+</div>

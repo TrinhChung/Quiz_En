@@ -19,11 +19,17 @@ def quizzes():
     return render_template('quizzes.html')
 
 
+@page_bp.route('/quizzes-list')
+def quizzes_list():
+    """Render quizzes browse page."""
+    return render_template('list_quizzes.html')
+
+
 @page_bp.route('/quiz/<int:quiz_id>')
 def quiz_detail(quiz_id):
-    """Render single quiz detail page."""
+    """Render single quiz attempt page."""
     quiz = QuizService.get_quiz(quiz_id)
     if not quiz:
         return render_template('404.html'), 404
     formatted = format_quiz(quiz)
-    return render_template('quiz_detail.html', quiz=formatted)
+    return render_template('quiz_attempt.html', quiz=formatted)
