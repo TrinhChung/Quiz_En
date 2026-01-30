@@ -3,7 +3,7 @@
 import os
 import json
 import re
-import google.generativeai as genai
+import google.genai as genai
 
 # Cấu hình Gemini API
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
