@@ -31,46 +31,185 @@ jobs:
           ssh -p $SSH_PORT $SSH_USER@$SSH_HOST << 'EOF'
           set -e
           
-          # Kiểm tra xem git có được cài đặt không
-          if ! command -v git &> /dev/null; then
-            echo "Error: Git is not installed on VPS"
-            echo "Please install Git manually: sudo apt-get install -y git"
-            exit 1
-          fi
-          
-          # Kiểm tra xem docker-compose có được cài đặt không
-          if ! command -v docker &> /dev/null; then
-            echo "Docker not found, please install Docker first."
-            exit 1
-          fi
-          
-          # Di chuyển đến thư mục dự án hoặc tạo mới nếu chưa có
+          echo "========== Deployment Started =========="
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
           PROJECT_DIR="/home/$SSH_USER/quiz-app"
+          BACKUP_DIR="/home/$SSH_USER/quiz-app-backups"
+          
+          # 1. Kiểm tra prerequisites
+          echo "[1/7] Checking prerequisites..."
+          if ! command -v git &> /dev/null; then
+            echo "❌ Error: Git is not installed on VPS"
+            exit 1
+          fi
+          
+          if ! command -v docker &> /dev/null; then
+            echo "❌ Error: Docker is not installed on VPS"
+            exit 1
+          fi
+          
+          echo "✓ Git and Docker are installed"
+          
+          # 2. Tạo backup directory
+          echo "[2/7] Creating backup directory..."
+          mkdir -p "$BACKUP_DIR"
+          
+          # 3. Clone hoặc update code
+          echo "[3/7] Updating repository..."
           if [ ! -d "$PROJECT_DIR" ]; then
             mkdir -p "$PROJECT_DIR"
             cd "$PROJECT_DIR"
-            git clone https://github.com/${{ github.repository }}.git .
+            git clone https://github.com/${{ github.repository }}.git . || { echo "❌ Clone failed"; exit 1; }
           else
             cd "$PROJECT_DIR"
-            git fetch origin
-            git reset --hard origin/main
+            
+            # Backup hiện tại trước khi update
+            if [ -d "$PROJECT_DIR/.git" ]; then
+              CURRENT_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
+              echo "Current commit: $CURRENT_COMMIT"
+              
+              # Backup docker-compose state
+              docker compose ps > "$BACKUP_DIR/docker-state-$TIMESTAMP.log" 2>/dev/null || true
+            fi
+            
+            git fetch origin || { echo "❌ Git fetch failed"; exit 1; }
+            git reset --hard origin/main || { echo "❌ Git reset failed"; exit 1; }
           fi
           
-          # Tạo file .env nếu chưa có
+          echo "✓ Repository updated"
+          
+          # 4. Setup environment
+          echo "[4/7] Setting up environment..."
           if [ ! -f .env ]; then
             echo "Creating .env file..."
             cat > .env << 'ENVEOF'
           GEMINI_API_KEY=$GEMINI_API_KEY
           SECRET_KEY=$(openssl rand -hex 32)
           ENVEOF
+          else
+            echo ".env file already exists, updating GEMINI_API_KEY..."
+            sed -i "s/^GEMINI_API_KEY=.*/GEMINI_API_KEY=$GEMINI_API_KEY/" .env
           fi
           
-          # Dừng các container cũ nếu có
-          docker compose down || true
+          echo "✓ Environment configured"
           
-          # Xây dựng và chạy ứng dụng
-          docker compose up -d --build
+          # 5. Backup current containers
+          echo "[5/7] Backing up current state..."
+          docker compose ps > "$BACKUP_DIR/before-deploy-$TIMESTAMP.log" 2>/dev/null || true
+          docker compose logs --tail=100 > "$BACKUP_DIR/logs-before-$TIMESTAMP.log" 2>/dev/null || true
           
-          echo "Deployment successful!"
-          echo "Application is running on port 1132"
+          # 6. Deploy dengan fallback
+          echo "[6/7] Deploying application..."
+          if docker compose down 2>&1 | tee "$BACKUP_DIR/shutdown-$TIMESTAMP.log"; then
+            echo "✓ Old containers stopped"
+          else
+            echo "⚠ Warning: Could not stop old containers, continuing..."
+          fi
+          
+          if docker compose up -d --build 2>&1 | tee "$BACKUP_DIR/deploy-$TIMESTAMP.log"; then
+            echo "✓ New containers started"
+          else
+            echo "❌ Container startup failed!"
+            docker compose logs >> "$BACKUP_DIR/error-$TIMESTAMP.log" 2>&1
+            exit 1
+          fi
+          
+          # 7. Health check
+          echo "[7/7] Performing health checks..."
+          sleep 3
+          
+          # Check if container is running
+          if docker compose ps | grep -q "quiz-app.*Up"; then
+            echo "✓ Container is running"
+          else
+            echo "❌ Container failed to start!"
+            docker compose logs >> "$BACKUP_DIR/error-$TIMESTAMP.log" 2>&1
+            docker compose down || true
+            exit 1
+          fi
+          
+          # Check application endpoint
+          MAX_RETRIES=10
+          RETRY=0
+          while [ $RETRY -lt $MAX_RETRIES ]; do
+            if curl -s http://localhost:1132 > /dev/null 2>&1; then
+              echo "✓ Application is responding on port 1132"
+              break
+            fi
+            RETRY=$((RETRY + 1))
+            if [ $RETRY -lt $MAX_RETRIES ]; then
+              echo "  Waiting for app to be ready... ($RETRY/$MAX_RETRIES)"
+              sleep 2
+            fi
+          done
+          
+          if [ $RETRY -eq $MAX_RETRIES ]; then
+            echo "❌ Application health check failed after $MAX_RETRIES attempts!"
+            docker compose logs >> "$BACKUP_DIR/error-$TIMESTAMP.log" 2>&1
+            docker compose down || true
+            exit 1
+          fi
+          
+          # Save deployment info
+          echo "✓ All health checks passed"
+          
+          echo ""
+          echo "========== Deployment Completed =========="
+          echo "✅ Application deployed successfully!"
+          echo "📍 Application running on: http://$SSH_HOST:1132"
+          echo "📅 Deployment time: $(date)"
+          echo "📦 Backup location: $BACKUP_DIR/docker-state-$TIMESTAMP.log"
+          echo ""
+          echo "Deployment logs saved to:"
+          echo "  - Before: $BACKUP_DIR/before-deploy-$TIMESTAMP.log"
+          echo "  - Deploy: $BACKUP_DIR/deploy-$TIMESTAMP.log"
+          
           EOF
+
+      - name: Verify Deployment Status
+        if: always()
+        env:
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+        run: |
+          ssh -p $SSH_PORT $SSH_USER@$SSH_HOST << 'EOF'
+          PROJECT_DIR="/home/$SSH_USER/quiz-app"
+          cd "$PROJECT_DIR"
+          
+          echo "========== Deployment Status Check =========="
+          echo ""
+          echo "Container Status:"
+          docker compose ps
+          echo ""
+          echo "Recent Logs (last 20 lines):"
+          docker compose logs --tail=20
+          echo ""
+          echo "========== End Status Check =========="
+          EOF
+
+      - name: Notify on Failure
+        if: failure()
+        env:
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+        run: |
+          echo "❌ Deployment failed!"
+          echo "Check logs on VPS at: /home/$SSH_USER/quiz-app-backups/"
+          
+          ssh -p $SSH_PORT $SSH_USER@$SSH_HOST << 'EOF'
+          PROJECT_DIR="/home/$SSH_USER/quiz-app"
+          BACKUP_DIR="/home/$SSH_USER/quiz-app-backups"
+          
+          echo "Collecting error logs..."
+          mkdir -p "$BACKUP_DIR"
+          
+          if [ -d "$PROJECT_DIR" ]; then
+            cd "$PROJECT_DIR"
+            docker compose logs > "$BACKUP_DIR/deployment-error-$(date +%Y%m%d_%H%M%S).log" 2>&1 || true
+            docker ps -a >> "$BACKUP_DIR/deployment-error-$(date +%Y%m%d_%H%M%S).log" 2>&1 || true
+          fi
+          EOF
+          
+          exit 1

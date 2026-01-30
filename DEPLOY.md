@@ -1,8 +1,18 @@
 # Deploy Hướng Dẫn
 
-## Cập nhật: Port 1132
+## Cập nhật: Port 1132 & Deployment Safety
 
-Ứng dụng hiện đã được cấu hình để chạy trên **port 1132** thay vì 5000.
+Ứng dụng hiện đã được cấu hình để chạy trên **port 1132** thay vì 5000 với **deployment safety checks**.
+
+## 📋 Mục lục
+
+1. [Cấu hình GitHub Secrets](#1-cấu-hình-github-secrets)
+2. [Automatic Deployment](#2-automatic-deployment-cicd)
+3. [Deployment Safety Features](#3-deployment-safety-features)
+4. [Health Check](#4-health-check)
+5. [Rollback Strategy](#5-rollback-strategy)
+6. [Monitoring](#6-monitoring)
+7. [Troubleshooting](#7-troubleshooting)
 
 ## 1. Cấu hình GitHub Secrets
 
@@ -13,7 +23,7 @@ Trước tiên, hãy thiết lập các secrets trong repository GitHub của b�
    - `SSH_HOST`: IP hoặc domain của VPS
    - `SSH_PORT`: SSH port (thường là 22)
    - `SSH_USER`: Username SSH (thường là root hoặc user khác)
-   - `SSH_PRIVATE_KEY`: Nội dung của private SSH key (bắt đầu với `-----BEGIN RSA PRIVATE KEY-----`)
+   - `SSH_PRIVATE_KEY`: Nội dung của private SSH key (Ed25519 format)
    - `GEMINI_API_KEY`: API key của bạn
 
 ## 2. Automatic Deployment (CI/CD)
@@ -22,138 +32,337 @@ Trước tiên, hãy thiết lập các secrets trong repository GitHub của b�
 
 ```bash
 git add .
-git commit -m "Update port to 1132"
+git commit -m "Update code"
 git push origin main
 ```
 
-GitHub Actions sẽ tự động:
-- SSH vào VPS của bạn
-- Clone hoặc update code từ repository
-- Build Docker image
-- Start container trên port 1132
+GitHub Actions sẽ tự động thực hiện:
+- ✅ Check prerequisites (Git, Docker)
+- ✅ Clone/update code từ repository
+- ✅ Backup trước deploy
+- ✅ Build Docker image
+- ✅ Start container
+- ✅ Health check (7 bước kiểm tra)
+- ✅ Save logs
 
-Theo dõi deployment tại: `https://github.com/YOUR_USERNAME/Quiz_En/actions`
+## 3. Deployment Safety Features
 
-## 3. Manual Deployment (Local Script)
-
-Nếu muốn deploy thủ công từ máy local:
-
-### Yêu cầu:
-- SSH key đã được setup tại `~/.ssh/id_rsa`
-- Có quyền SSH truy cập VPS
-
-### Cách sử dụng:
-
-```bash
-# Setup environment variables (tuỳ chọn)
-export SSH_USER=your_username
-export SSH_HOST=your_vps_ip
-export SSH_PORT=22
-export GITHUB_REPO=TrinhChung/Quiz_En
-
-# Chạy script deploy
-./deploy.sh
+### 3.1 Pre-Deployment Checks
+```yaml
+[1/7] Checking prerequisites
+      - Git installed
+      - Docker installed
 ```
 
-## 4. Yêu cầu trên VPS
+### 3.2 Backup Strategy
+```yaml
+[2/7] Creating backup directory
+[5/7] Backing up current state
+      - Docker state snapshot
+      - Application logs
+      - Deployment logs
+```
 
-VPS của bạn phải có:
-- ✅ Docker Compose v2.39.1 (bạn đã có)
-- ✅ Docker (nếu chưa có, script sẽ kiểm tra)
-- ✅ Git (nếu chưa có, script sẽ cài đặt)
+Backups được lưu tại: `/home/SSH_USER/quiz-app-backups/`
 
-## 5. Kiểm tra Deployment
+### 3.3 Environment Configuration
+```yaml
+[4/7] Setting up environment
+      - .env file created/updated
+      - GEMINI_API_KEY configured
+      - SECRET_KEY generated
+```
 
-Sau khi deploy, kiểm tra:
+### 3.4 Health Check (Chi tiết)
+```yaml
+[6/7] Deploying application
+[7/7] Performing health checks
+      ✓ Container is running
+      ✓ HTTP endpoint responding (http://localhost:1132)
+      ✓ Max retries: 10 attempts with 2s interval
+```
 
+## 4. Health Check
+
+### 4.1 Automatic Health Check (sau deploy)
+```bash
+# Đã được tích hợp trong CI/CD
+curl -s http://localhost:1132
+```
+
+### 4.2 Manual Health Check
+```bash
+# Chạy trên local machine
+./check_health.sh <VPS_IP> <SSH_PORT> <SSH_USER> [<SSH_KEY>]
+
+# Ví dụ
+./check_health.sh 203.0.113.10 22 root ~/.ssh/id_ed25519
+```
+
+Script sẽ kiểm tra:
+- Container status
+- HTTP endpoint
+- Recent logs
+- Resource usage
+- Disk space
+
+### 4.3 SSH vào VPS để check
+```bash
+ssh -p YOUR_SSH_PORT USERNAME@YOUR_VPS_IP
+
+# Check container
+cd /home/YOUR_USER/quiz-app
+docker compose ps
+docker compose logs -f web
+
+# Check API endpoint
+curl http://localhost:1132
+```
+
+## 5. Rollback Strategy
+
+### 5.1 Automatic Rollback (nếu health check fail)
+CI/CD workflow sẽ **tự động dừng và không tiếp tục** nếu:
+- Container fail to start
+- Health check timeout
+- HTTP endpoint không respond
+
+Lúc đó:
+1. Tất cả logs được save trong `/home/SSH_USER/quiz-app-backups/`
+2. Containers được stop
+3. Deployment fail và notify
+
+### 5.2 Manual Rollback
 ```bash
 # SSH vào VPS
 ssh -p YOUR_SSH_PORT USERNAME@YOUR_VPS_IP
 
-# Kiểm tra docker containers
+# Chạy rollback script
 cd /home/YOUR_USER/quiz-app
-docker-compose ps
+bash ../../rollback.sh
 
-# Xem logs
-docker-compose logs -f web
-
-# Kiểm tra ứng dụng
-curl http://localhost:1132
+# hoặc từ local
+./rollback.sh /home/YOUR_USER/quiz-app
 ```
 
-## 6. Cấu hình Firewall
+Script sẽ:
+- Stop current containers
+- Restart từ backup
+- Health check
 
-Đảm bảo port 1132 được mở trên VPS:
+### 5.3 Manual Git Rollback
+```bash
+ssh -p YOUR_SSH_PORT USERNAME@YOUR_VPS_IP
+
+cd /home/YOUR_USER/quiz-app
+
+# Xem history commits
+git log --oneline | head -10
+
+# Rollback to specific commit
+git reset --hard <COMMIT_HASH>
+
+# Rebuild and restart
+docker compose down
+docker compose up -d --build
+```
+
+## 6. Monitoring
+
+### 6.1 GitHub Actions Logs
+```
+https://github.com/TrinhChung/Quiz_En/actions
+```
+
+Xem:
+- Deployment status
+- Build logs
+- Health check results
+- Errors
+
+### 6.2 VPS Logs
 
 ```bash
-# UFW (nếu sử dụng)
-sudo ufw allow 1132/tcp
+# Recent backup/deployment logs
+ls -lah /home/YOUR_USER/quiz-app-backups/
 
-# hoặc AWS Security Group, DigitalOcean Firewall, etc.
+# View specific log
+cat /home/YOUR_USER/quiz-app-backups/deploy-20260130_120000.log
+
+# View error logs
+cat /home/YOUR_USER/quiz-app-backups/error-20260130_120000.log
 ```
 
-## 7. Reverse Proxy (Tuỳ chọn)
+### 6.3 Application Logs
 
-Nếu bạn muốn sử dụng domain với SSL, hãy cấu hình Nginx/Apache:
-
-### Ví dụ Nginx:
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com;
-
-    location / {
-        proxy_pass http://localhost:1132;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-Sau đó cài đặt SSL:
 ```bash
-sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d your-domain.com
+ssh -p YOUR_SSH_PORT USERNAME@YOUR_VPS_IP
+
+cd /home/YOUR_USER/quiz-app
+
+# Real-time logs
+docker compose logs -f
+
+# Last N lines
+docker compose logs --tail=100
+
+# Specific service
+docker compose logs web
 ```
 
-## 8. Troubleshooting
+### 6.4 System Health
 
-### SSH connection refused
-- Kiểm tra IP VPS có đúng không
-- Kiểm tra SSH port có mở không
-- Kiểm tra private key có quyền đúng: `chmod 600 ~/.ssh/id_rsa`
-
-### Docker command not found on VPS
-- Cài đặt Docker: `curl -fsSL https://get.docker.com | sudo bash`
-- Cấu hình quyền: `sudo usermod -aG docker $USER`
-
-### Port 1132 already in use
 ```bash
-# Tìm process sử dụng port
+# Check disk space
+df -h
+
+# Check memory
+free -h
+
+# Check CPU
+top -bn1 | head -20
+
+# Check Docker
+docker ps -a
+docker stats
+```
+
+## 7. Troubleshooting
+
+### 7.1 Deployment Failed - "Docker not found"
+**Giải pháp:**
+```bash
+ssh -p YOUR_SSH_PORT USERNAME@YOUR_VPS_IP
+
+# Install Docker
+curl -fsSL https://get.docker.com | bash
+
+# Add user to docker group
+sudo usermod -aG docker $USER
+
+# Verify
+docker --version
+```
+
+### 7.2 Health Check Timeout
+**Nguyên nhân:**
+- App startup chậm
+- Port 1132 đã được sử dụng
+- Memory không đủ
+
+**Giải pháp:**
+```bash
+# Check port
+lsof -i :1132
+
+# Kill process if needed
+sudo kill -9 <PID>
+
+# Check memory
+free -h
+
+# Check logs
+docker compose logs
+```
+
+### 7.3 Container Fails to Start
+```bash
+cd /home/YOUR_USER/quiz-app
+
+# Check logs
+docker compose logs web
+
+# Try manual build
+docker compose build --no-cache
+
+# Try restart
+docker compose restart web
+```
+
+### 7.4 .env File Lost
+```bash
+cd /home/YOUR_USER/quiz-app
+
+# Recreate .env
+cat > .env << EOF
+GEMINI_API_KEY=YOUR_KEY
+SECRET_KEY=$(openssl rand -hex 32)
+EOF
+
+# Restart
+docker compose restart web
+```
+
+### 7.5 Port Already in Use
+```bash
+# Find what's using port 1132
 sudo lsof -i :1132
 
-# Kill process
+# Kill it (if it's old process)
 sudo kill -9 <PID>
+
+# Or change docker-compose port mapping and update nginx
 ```
 
-### Environment variables not found
-- Kiểm tra file `.env` trên VPS: `cat /home/YOUR_USER/quiz-app/.env`
-- Thêm biến nếu thiếu
-- Restart container: `docker-compose restart web`
+## 8. Best Practices
 
-## 9. Cập nhật ứng dụng
+### 8.1 Deployment Checklist
+- [ ] Test locally first
+- [ ] Check GitHub Actions for any secrets missing
+- [ ] Verify SSH key is Ed25519 format
+- [ ] Run health check after deploy
+- [ ] Check logs on VPS
+- [ ] Monitor for 5-10 minutes after deploy
 
-Để cập nhật ứng dụng:
+### 8.2 Code Changes
+```bash
+# Before pushing
+git status                          # Check changes
+git diff                            # Review changes
+python -m pytest tests/             # Run tests locally
 
-1. **Automatic**: Push code lên main branch, GitHub Actions sẽ tự động deploy
-2. **Manual**: Chạy `./deploy.sh` từ local
+# Push with clear commit message
+git add .
+git commit -m "Feature: Add new feature"
+git push origin main
 
-## File cấu hình liên quan
+# Monitor
+# Check: https://github.com/TrinhChung/Quiz_En/actions
+```
 
-- `.github/workflows/deploy.yml` - CI/CD workflow
-- `docker-compose.yml` - Docker Compose configuration (port: 1132)
-- `Dockerfile` - Container configuration (port: 1132)
-- `run.py` - Development server port (1132)
-- `deploy.sh` - Manual deploy script
+### 8.3 Environment Variables
+```bash
+# Never commit .env
+echo ".env" >> .gitignore
+
+# Keep GEMINI_API_KEY safe
+# Use GitHub Secrets, not plain text
+```
+
+### 8.4 Regular Backups
+```bash
+# On VPS, periodic backup of backups directory
+cd /home/YOUR_USER
+tar -czf quiz-app-backup-$(date +%Y%m%d).tar.gz quiz-app-backups/
+
+# Upload to cloud storage periodically
+```
+
+## 9. File cấu hình liên quan
+
+| File | Mô tả |
+|------|-------|
+| `.github/workflows/deploy.yml` | CI/CD workflow - deployment automation |
+| `docker-compose.yml` | Docker configuration (port: 1132) |
+| `Dockerfile` | Container image (port: 1132) |
+| `rollback.sh` | Manual rollback script |
+| `check_health.sh` | Health check script |
+| `deploy.sh` | Local deployment script |
+
+## 10. Support
+
+Nếu gặp vấn đề:
+1. Check GitHub Actions logs
+2. Check VPS logs tại `/home/YOUR_USER/quiz-app-backups/`
+3. Run `./check_health.sh`
+4. Check application logs: `docker compose logs`
