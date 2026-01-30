@@ -65,6 +65,13 @@
             padding: 0 1rem;
         }
 
+        /* Full width for home page */
+        .home-container {
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
         .header {
             margin-bottom: 2rem;
         }
@@ -677,7 +684,7 @@
     </nav>
 
     <!-- Main Content -->
-    <div class="container">
+    <div class="container {% if current_route == 'home' %}home-container{% endif %}">
         {% block content %}{% endblock %}
     </div>
 

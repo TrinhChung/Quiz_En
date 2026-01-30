@@ -1,4 +1,5 @@
-{# Dynamic Header Component #}
+{# Dynamic Header Component - Only shown when show_page_header is True #}
+{% if show_page_header %}
 <div class="page-header" data-route="{{ current_route | default('home') }}">
     <div class="header-content">
         <div class="header-title">
@@ -45,3 +46,4 @@
     </div>
     {% endif %}
 </div>
+{% endif %}

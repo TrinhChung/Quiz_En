@@ -15,12 +15,14 @@ def _get_page_context(page_type, **kwargs):
             'page_subtitle': 'Create, Practice, and Master Your Knowledge',
             'current_route': 'home',
             'show_breadcrumb': False,
+            'show_page_header': False,  # Hide header on home page
         },
         'quizzes_list': {
             'page_title': '📚 Browse Quizzes',
             'page_subtitle': 'Choose a quiz to test your knowledge',
             'current_route': 'quizzes_list',
             'show_breadcrumb': True,
+            'show_page_header': True,
             'breadcrumbs': [
                 {'label': 'Home', 'url': '/'},
                 {'label': 'Browse Quizzes', 'url': '/quizzes-list'},
@@ -31,6 +33,7 @@ def _get_page_context(page_type, **kwargs):
             'page_subtitle': 'Create, edit, and manage your quiz questions',
             'current_route': 'quizzes_manage',
             'show_breadcrumb': True,
+            'show_page_header': True,
             'breadcrumbs': [
                 {'label': 'Home', 'url': '/'},
                 {'label': 'Manage Quizzes', 'url': '/quizzes'},
@@ -41,6 +44,7 @@ def _get_page_context(page_type, **kwargs):
             'page_subtitle': 'Answer each question carefully',
             'current_route': 'quiz_attempt',
             'show_breadcrumb': True,
+            'show_page_header': True,
             'breadcrumbs': [
                 {'label': 'Home', 'url': '/'},
                 {'label': 'Browse', 'url': '/quizzes-list'},
@@ -52,6 +56,7 @@ def _get_page_context(page_type, **kwargs):
             'page_subtitle': 'Generate quiz questions from vocabulary using AI',
             'current_route': 'generator',
             'show_breadcrumb': True,
+            'show_page_header': True,
             'breadcrumbs': [
                 {'label': 'Home', 'url': '/'},
                 {'label': 'Generator', 'url': '/generator'},

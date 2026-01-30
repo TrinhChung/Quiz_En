@@ -2,51 +2,400 @@
 
 {% block title %}Home - Quiz App{% endblock %}
 
-{% block content %}
-<!-- Page Header -->
-{% include "components/page_header.html" %}
+{% block extra_css %}
+<style>
+    body {
+        padding-bottom: 0 !important;
+    }
 
-<!-- Hero Section -->
-<div class="hero">
-    <h1>🎓 Welcome to Quiz App</h1>
-    <p>Create, Practice, and Master Your Knowledge</p>
-    <a href="/#quizzes" class="btn btn-primary">Start Learning</a>
-</div>
+    /* Hero Section */
+    .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 6rem 2rem;
+        text-align: center;
+    }
 
-    .features {
+    .hero-content {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .hero-section h1 {
+        font-size: 3.5rem;
+        margin: 0 0 1rem 0;
+        font-weight: bold;
+    }
+
+    .hero-section p {
+        font-size: 1.3rem;
+        margin: 0 0 2rem 0;
+        opacity: 0.95;
+    }
+
+    .hero-cta {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .hero-cta .btn {
+        padding: 0.8rem 2rem;
+        font-size: 1.1rem;
+    }
+
+    /* Features Section */
+    .features-section {
+        background: #f9f9f9;
+        padding: 4rem 2rem;
+    }
+
+    .features-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .section-title {
+        text-align: center;
+        font-size: 2.5rem;
+        margin-bottom: 3rem;
+        color: #333;
+    }
+
+    .features-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 2rem;
         margin-bottom: 3rem;
     }
 
     .feature-card {
         background: white;
-        border-radius: 8px;
         padding: 2rem;
+        border-radius: 12px;
         text-align: center;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        transition: transform 0.3s, box-shadow 0.3s;
+        transition: all 0.3s;
+        border: 1px solid #f0f0f0;
     }
 
     .feature-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transform: translateY(-8px);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+        border-color: #667eea;
     }
 
     .feature-icon {
         font-size: 3rem;
         margin-bottom: 1rem;
+        display: block;
     }
 
     .feature-card h3 {
-        color: #667eea;
-        margin-bottom: 0.5rem;
+        font-size: 1.3rem;
+        color: #333;
+        margin-bottom: 0.8rem;
     }
 
     .feature-card p {
         color: #666;
+        line-height: 1.6;
     }
+
+    /* Menu Section */
+    .menu-section {
+        background: white;
+        padding: 4rem 2rem;
+    }
+
+    .menu-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .menu-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+    }
+
+    .menu-card {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s;
+        border-left: 4px solid #667eea;
+    }
+
+    .menu-card:hover {
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+        transform: translateY(-5px);
+    }
+
+    .menu-card a {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
+    .menu-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .menu-card h3 {
+        font-size: 1.2rem;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .menu-card p {
+        color: #666;
+        font-size: 0.95rem;
+    }
+
+    /* Stats Section */
+    .stats-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 2rem;
+    }
+
+    .stats-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+        text-align: center;
+    }
+
+    .stat-box {
+        padding: 2rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 1rem;
+        opacity: 0.9;
+    }
+
+    /* CTA Section */
+    .cta-section {
+        background: white;
+        padding: 4rem 2rem;
+        text-align: center;
+    }
+
+    .cta-content {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .cta-section h2 {
+        font-size: 2rem;
+        color: #333;
+        margin-bottom: 1rem;
+    }
+
+    .cta-section p {
+        font-size: 1.1rem;
+        color: #666;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .cta-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .hero-section h1 {
+            font-size: 2rem;
+        }
+
+        .hero-section p {
+            font-size: 1rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .features-grid,
+        .menu-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
+
+        .hero-cta {
+            flex-direction: column;
+        }
+
+        .hero-cta .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-content">
+        <h1>🎓 Welcome to Quiz App</h1>
+        <p>Create, Practice, and Master Your Knowledge with AI-Powered Quiz Generation</p>
+        <div class="hero-cta">
+            <a href="/quizzes-list" class="btn btn-primary" style="background: white; color: #667eea;">
+                📚 Browse Quizzes
+            </a>
+            <a href="/generator" class="btn btn-primary">
+                ✨ Generate Quiz
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+    <div class="features-container">
+        <h2 class="section-title">Why Choose Quiz App?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <span class="feature-icon">📝</span>
+                <h3>Practice Quizzes</h3>
+                <p>Test your knowledge with interactive multiple choice questions and get instant feedback</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">🤖</span>
+                <h3>AI Generator</h3>
+                <p>Automatically generate quizzes from vocabulary using advanced AI technology</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">📊</span>
+                <h3>Track Progress</h3>
+                <p>Monitor your learning journey and see improvements over time</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">⚡</span>
+                <h3>Fast & Easy</h3>
+                <p>Simple and intuitive interface designed for quick and effective learning</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Menu Section -->
+<section class="menu-section">
+    <div class="menu-container">
+        <h2 class="section-title">Get Started</h2>
+        <div class="menu-grid">
+            <div class="menu-card">
+                <a href="/quizzes-list">
+                    <span class="menu-icon">🎯</span>
+                    <h3>Take a Quiz</h3>
+                    <p>Browse and practice from our collection of quizzes</p>
+                </a>
+            </div>
+            <div class="menu-card">
+                <a href="/quizzes">
+                    <span class="menu-icon">➕</span>
+                    <h3>Create Manually</h3>
+                    <p>Add custom quiz questions and build your own quiz</p>
+                </a>
+            </div>
+            <div class="menu-card">
+                <a href="/generator">
+                    <span class="menu-icon">✨</span>
+                    <h3>AI Generator</h3>
+                    <p>Automatically generate quizzes from vocabulary words</p>
+                </a>
+            </div>
+            <div class="menu-card">
+                <a href="#features">
+                    <span class="menu-icon">📖</span>
+                    <h3>Learn More</h3>
+                    <p>Discover all features and capabilities of Quiz App</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section">
+    <div class="stats-container">
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-number" id="total-quizzes">0</div>
+                <div class="stat-label">Quizzes Created</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Free & Open</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">∞</div>
+                <div class="stat-label">Questions</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">24/7</div>
+                <div class="stat-label">Available</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="cta-content">
+        <h2>Ready to Start Learning?</h2>
+        <p>Join thousands of users who are improving their knowledge with Quiz App. Create your first quiz today and start practicing!</p>
+        <div class="cta-buttons">
+            <a href="/quizzes-list" class="btn btn-primary">Start Now</a>
+            <a href="/generator" class="btn btn-secondary">Generate with AI</a>
+        </div>
+    </div>
+</section>
+
+<script>
+    // Load stats
+    async function loadStats() {
+        try {
+            const response = await fetch('/api/quizzes');
+            const quizzes = await response.json();
+            document.getElementById('total-quizzes').textContent = quizzes.length;
+        } catch (e) {
+            console.error('Error loading stats:', e);
+        }
+    }
+
+    loadStats();
+</script>
+{% endblock %}
 
     .menu-section {
         display: grid;
@@ -179,49 +528,6 @@
                 <p>View API documentation and examples</p>
             </a>
         </div>
-    </div>
-</div>
-
-<!-- Stats -->
-<div class="stats">
-    <div class="stat-item">
-        <h3 id="total-quizzes">0</h3>
-        <p>Total Quizzes</p>
-    </div>
-    <div class="stat-item">
-        <h3>100%</h3>
-        <p>Free</p>
-    </div>
-    <div class="stat-item">
-        <h3>∞</h3>
-        <p>Questions</p>
-    </div>
-</div>
-
-<!-- API Documentation -->
-<div class="card" id="docs">
-    <h2>API Endpoints</h2>
-    <div style="background: #f5f5f5; padding: 1rem; border-radius: 4px; overflow-x: auto;">
-        <pre><code>
-# Quiz Management
-GET     /api/quizzes              - List all quizzes
-POST    /api/quizzes              - Create new quiz
-GET     /api/quizzes/&lt;id&gt;       - Get quiz by ID
-PUT     /api/quizzes/&lt;id&gt;       - Update quiz
-DELETE  /api/quizzes/&lt;id&gt;       - Delete quiz
-
-# Answer Questions
-POST    /api/answer/&lt;id&gt;        - Submit answer
-
-# AI Generator
-POST    /api/generator/generate  - Generate & save quizzes
-POST    /api/generator/preview   - Preview generated quizzes
-
-# Pages
-GET     /                         - Home page
-GET     /quiz/&lt;id&gt;             - Quiz detail page
-GET     /generator               - Generator page
-        </code></pre>
     </div>
 </div>
 
