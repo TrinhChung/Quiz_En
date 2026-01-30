@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quiz App</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    .quiz { margin-bottom: 1rem; padding: 0.5rem; border: 1px solid #ddd; }
+  </style>
+</head>
+<body>
+  <h1>Danh sách Quiz</h1>
+  {% if quizzes %}
+    {% for q in quizzes %}
+      <div class="quiz">
+        <strong>#{{ q.id }}</strong> — {{ q.question }}
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>Không có quiz nào.</p>
+  {% endif %}
+</body>
+</html>

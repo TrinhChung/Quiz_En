@@ -1,0 +1,69 @@
+# .gitignore cho dự án Flask
+# Bỏ qua các file và thư mục sinh ra bởi Python, virtualenv, IDEs, và các dev artifacts
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+myenv/
+
+# Local environment variables
+.env
+.env.*
+
+# Flask instance folder
+instance/
+.webassets-cache
+
+# Database files
+*.db
+*.sqlite3
+
+# Migrations
+migrations/
+
+# Logs and reports
+*.log
+logs/
+coverage.xml
+.coverage
+.coverage.*
+
+# Pytest
+.pytest_cache/
+
+# Editor/IDE config
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+
+# Node
+node_modules/
+
+# Misc
+*.swp
+*~
+
+# Optional: ignore secrets or keys just in case
+secrets.yaml
+
+# End of file
